@@ -5,7 +5,7 @@
         public int UsuarioId { get; set; }
         public string NomeCompleto { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
+        public string PassWordHash { get; set; } = string.Empty;
         public string HashPass {  get; set; } = string.Empty;
         public DateTime DataCriacao { get; set; }
         public DateTime? DataAtualizacao { get; set; }

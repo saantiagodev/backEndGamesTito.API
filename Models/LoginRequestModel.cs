@@ -13,7 +13,7 @@ namespace BackEndGamesTito.API.Models
         [EmailAddress(ErrorMessage = "O Email informado não pe válido.")] // Verifica se o Email é válido e define uma mensagem de erro caso não seja válido
         public string Email { get; set; } = string.Empty;
         [Required(ErrorMessage = "O campo senha é obrigatório.")]
-        public string PasswordHash { get; set; } = string.Empty; // Por questões de segurança preiso pedir o email e a senha do usuário para a requisição
+        public string PassWordHash { get; set; } = string.Empty; // Por questões de segurança preiso pedir o email e a senha do usuário para a requisição
     }
 }
 
