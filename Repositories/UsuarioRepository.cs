@@ -24,10 +24,10 @@ namespace BackEndGamesTito.API.Repositories
                 await connection.OpenAsync();
 
                 var commandText = @"
-                    INSERT INTO dbo.Usuarios 
-                    (NomeCompleto, Email, PassWordHash, HashPass, DataCriacao, DataAtualizacao, StatusId)
+                    INSERT INTO dbo.Usuario 
+                    (NomeCompleto, Email, PassWordHash, HashPass, DataAtualizacao, StatusId)
                     VALUES 
-                    (@NomeCompleto, @Email, @PassWordHash, @HashPass, @DataCriacao, @DataAtualizacao, @StatusId)
+                    (@NomeCompleto, @Email, @PassWordHash, @HashPass, @DataAtualizacao, @StatusId)
                 ;";
 
                 using (var command = new SqlCommand(commandText, connection))

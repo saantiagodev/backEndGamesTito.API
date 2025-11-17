@@ -131,5 +131,70 @@ namespace BackEndGamesTito.API.Controllers
                 return builder.ToString();
             }
         }
+
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestModel model)
+        {
+            // 1. Busca o usuário pelo banco
+            var user = await _usuarioRepository.GetUserByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                return Unauthorized(new
+                {
+                    erro = true,
+                    message = "Usuário ou senha inválidos."
+                });
+            }
+
+            //2.  Recria o hash de login exatamente como no Registro
+            //** Criando a criptografia da senha **//
+
+            // Palavra passe 
+            string ApiKey = "mangaPara_todos_ComLeite_kkk";
+
+            //Cria a senha e email aplicando SHA256
+            string PassSHA256 = ComputeSha256Hash(model.PassWordHash);
+            string EmailSHA256 = ComputeSha256Hash(model.Email);
+
+
+            //Criando a string para a criptografia da senha
+            string PassCrip = PassSHA256 + EmailSHA256 + ApiKey;
+
+            // 3. Verifica o hash usando BCrypt
+            // Comnpara o hash recém criado com o hash salvo no banco (user.PassWordHash)
+            bool isPasswordValid;
+
+            try
+            {
+                isPasswordValid = BCrypt.Net.BCrypt.Verify(PassCrip, user.PassWordHash);
+            }
+            catch (Exception)
+            {
+                isPasswordValid = false;
+            }
+
+            if (!isPasswordValid)
+            {
+                return Unauthorized(new
+                {
+                    erro = true,
+                    message = "Usuário ou senha inválidos."
+                });
+            }
+
+            // 4. SUCESSO (no futuro gerar um token JWT aqui)
+            return Ok(new
+            {
+                Usuario = new
+                {
+                    email = user.Email,
+                    passWordHash = user.PassWordHash,
+                    nomeCompleto = user.NomeCompleto
+                }
+            });  
+                
+        }
     }
+
 }
