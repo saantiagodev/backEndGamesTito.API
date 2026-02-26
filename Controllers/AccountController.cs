@@ -12,6 +12,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using DbUsuario = BackEndGamesTito.API.Data.Models.Usuario;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BackEndGamesTito.API.Controllers
@@ -94,10 +96,9 @@ namespace BackEndGamesTito.API.Controllers
             var user = await _usuarioRepository.GetUserByEmailAsync(model.Email);
 
             if (user == null)
-            {
                 return Unauthorized(new { erro = true, message = "Usuário ou senha inválidos." });
-            }
 
+            // Validação da Senha (Mantenha sua lógica de Hash aqui)
             string ApiKey = "mangaPara_todos_ComLeite_kkk";
             string PassSHA256 = ComputeSha256Hash(model.PassWordHash);
             string EmailSHA256 = ComputeSha256Hash(model.Email);
@@ -111,15 +112,36 @@ namespace BackEndGamesTito.API.Controllers
             catch (Exception) { isPasswordValid = false; }
 
             if (!isPasswordValid)
-            {
                 return Unauthorized(new { erro = true, message = "Usuário ou senha inválidos." });
-            }
 
+            // --- AQUI COMEÇA A MÁGICA DO TOKEN ---
+
+            // 1. Gera o Token (O Crachá)
+            var tokenHandler = new JwtSecurityTokenHandler();
+            // USE A MESMA CHAVE DO PROGRAM.CS
+            var key = Encoding.ASCII.GetBytes("UmaSenhaMuitoForteEMuitoSecretaParaOProjetoGamesTito123");
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, user.Email), // Guarda o email dentro do token
+                    new Claim("id", user.UsuarioId.ToString()) // Guarda o ID
+                }),
+                Expires = DateTime.UtcNow.AddHours(8), // Token vale por 8 horas
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            // 2. Retorna o Token para o usuário
             return Ok(new
             {
                 erro = false,
                 message = "Usuário logado!",
-                Usuario = new { email = user.Email, passWordHash = user.PassWordHash, nomeCompleto = user.NomeCompleto }
+                token = tokenString, // <--- O TOKEN AGORA EXISTE!
+                usuario = new { email = user.Email, nome = user.NomeCompleto }
             });
         }
 
